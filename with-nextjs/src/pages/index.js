@@ -15,7 +15,6 @@ export default function Home({ weathers, week }) {
 
     const handleSubmit = e => {
         e.preventDefault();
-        console.log(search);
         setSearch('');
     };
     return (
@@ -33,6 +32,7 @@ export default function Home({ weathers, week }) {
                             onChange={e => setSearch(e.target.value)}
                             placeholder="Luanda, AO"
                             type="text"
+                            value={search}
                         />
                         <button type="submit">
                             <FaSearch size={20} color="#fff" />
@@ -82,7 +82,8 @@ export default function Home({ weathers, week }) {
     );
 }
 
-export const getServerSideProps = async () => {
+export async function getServerSideProps() {
+    // console.log(context.query);
     const response = await Services.api.get(
         `/current.json?key=${Services.key}&q=${'Luanda'}`
     );
@@ -121,4 +122,4 @@ export const getServerSideProps = async () => {
             week: weekData,
         },
     };
-};
+}
