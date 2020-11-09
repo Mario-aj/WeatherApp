@@ -3,7 +3,7 @@ import styled from 'styled-components';
 export const Container = styled.div`
     height: 100%;
 
-    background: url('/assets/background.jpg');
+    background: url('/assets/back.jpg');
     background-size: cover;
 `;
 
@@ -43,6 +43,25 @@ export const Content = styled.div`
     grid-template-areas:
         'search'
         'footer';
+
+    @media (max-width: 485px) {
+        form {
+            display: flex;
+            justify-content: center;
+            input {
+                width: 90px;
+                margin-right: 4px;
+                height: 26px;
+            }
+            button {
+                margin-top: -4px;
+                svg {
+                    width: 15px;
+                    height: 20px;
+                }
+            }
+        }
+    }
 `;
 
 export const Search = styled.div`
@@ -71,7 +90,8 @@ export const Search = styled.div`
             font-size: 1.6rem;
 
             span {
-                font-size: 1.4rem;
+                font-size: 1.5rem;
+                font-weight: bold;
             }
         }
     }
@@ -192,14 +212,36 @@ export const Footer = styled.div`
             justify-content: center;
             align-items: center;
 
-            margin-bottom: 16px;
-            padding-bottom: 16px;
+            margin-top: 6px;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.6);
         }
 
         ul {
             justify-content: center;
             align-items: center;
+            margin-bottom: 6px;
+        }
+    }
+
+    @media (max-width: 400px) {
+        .main-content {
+            margin: 8px;
+            .weather-graus {
+                img {
+                    width: 40px;
+                    height: 40px;
+                }
+            }
+        }
+
+        ul {
+            margin: 8px;
+
+            li {
+                padding: 8px;
+            }
         }
     }
 `;

@@ -1,5 +1,6 @@
 import { FaSearch, FaMapMarkerAlt } from 'react-icons/fa';
 import { useState } from 'react';
+import axios from 'axios';
 import {
     Container,
     Header,
@@ -8,20 +9,27 @@ import {
     Search,
     Footer,
 } from '../styles/index';
-import Services from '../services/api';
+import Server from '../lib/uteis';
 
 export default function Home({ weathers, week }) {
     const [search, setSearch] = useState('');
+    const [currentSearch, setCurrentSearch] = useState([]);
+    const [currentSearchOfWeek, setCurrentSearchOfWeek] = useState([]);
 
-    const handleSubmit = e => {
+    const handleSubmit = async e => {
         e.preventDefault();
+
+        const response = await Server.getDataPeerWeek(search);
+
+        setCurrentSearch(response.data);
+        setCurrentSearchOfWeek(response.weekData);
         setSearch('');
     };
     return (
         <Container>
             <Header>
                 <div>
-                    <h1>Welcome to weather-maj</h1>
+                    <h1>Welcome to the weather-maj</h1>
                 </div>
             </Header>
 
@@ -30,7 +38,7 @@ export default function Home({ weathers, week }) {
                     <Form onSubmit={handleSubmit}>
                         <input
                             onChange={e => setSearch(e.target.value)}
-                            placeholder="Luanda, AO"
+                            placeholder="type here!"
                             type="text"
                             value={search}
                         />
@@ -44,10 +52,11 @@ export default function Home({ weathers, week }) {
 
                         <p>
                             <strong>
-                                {weathers.city}, {weathers.country}
+                                {currentSearch.city || weathers.city},{' '}
+                                {currentSearch.country || weathers.country}
                             </strong>
 
-                            <span>{weathers.time}</span>
+                            <span>{currentSearch.time || weathers.time}</span>
                         </p>
                     </div>
                 </Search>
@@ -55,26 +64,50 @@ export default function Home({ weathers, week }) {
                 <Footer>
                     <div className="main-content">
                         <div className="weather-graus">
-                            <strong>{weathers.temperature}*C</strong>
-                            <img src={weathers.icon} alt="icon" />
+                            <strong>
+                                {currentSearch.temperature ||
+                                    weathers.temperature}
+                                *C
+                            </strong>
+                            <img
+                                src={currentSearch.icon || weathers.icon}
+                                alt="icon"
+                            />
                         </div>
 
                         <div className="weather-info">
-                            <p>{weathers.day}</p>
-                            <span>Humidity: {weathers.humidity}%</span>
-                            <span>Feelslike: {weathers.feelslike}*C</span>
-                            <span>Wind: {weathers.wind}km/h</span>
+                            <p>{currentSearch.day || weathers.day}</p>
+                            <span>
+                                Humidity:{' '}
+                                {currentSearch.humidity || weathers.humidity}%
+                            </span>
+                            <span>
+                                Feelslike:{' '}
+                                {currentSearch.feelslike || weathers.feelslike}
+                                *C
+                            </span>
+                            <span>
+                                Wind: {currentSearch.wind || weathers.wind}km/h
+                            </span>
                         </div>
                     </div>
 
                     <ul>
-                        {week.map(item => (
-                            <li key={item.temperature}>
-                                <p>{item.day}</p>
-                                <img src={item.icon} alt="icon" />
-                                <span>{item.temperature}*C</span>
-                            </li>
-                        ))}
+                        {currentSearchOfWeek.length > 0
+                            ? currentSearchOfWeek.map(item => (
+                                  <li key={item.temperature}>
+                                      <p>{item.day}</p>
+                                      <img src={item.icon} alt="icon" />
+                                      <span>{item.temperature}*C</span>
+                                  </li>
+                              ))
+                            : week.map(item => (
+                                  <li key={item.temperature}>
+                                      <p>{item.day}</p>
+                                      <img src={item.icon} alt="icon" />
+                                      <span>{item.temperature}*C</span>
+                                  </li>
+                              ))}
                     </ul>
                 </Footer>
             </Content>
@@ -83,43 +116,14 @@ export default function Home({ weathers, week }) {
 }
 
 export async function getServerSideProps() {
-    // console.log(context.query);
-    const response = await Services.api.get(
-        `/current.json?key=${Services.key}&q=${'Luanda'}`
-    );
+    const userLocation = await axios('http://ip-api.com/json');
 
-    const { current, location } = response.data;
-
-    const moment = require('moment');
-    const data = {
-        day: moment(location.localtime).format('dddd'),
-        date: moment(location.localtime).format('ddd, MMM'),
-        time: moment(location.localtime).format('hh:mm'),
-        city: location.name,
-        icon: current.condition.icon,
-        country: location.country,
-        temperature: current.temp_c,
-        feelslike: current.feelslike_c,
-        humidity: current.humidity,
-        wind: current.wind_kph,
-    };
-
-    const responseWeek = await Services.api.get(
-        `/forecast.json?key=${Services.key}&q=${'Luanda'}&days=${6}`
-    );
-
-    const weekData = responseWeek.data.forecast.forecastday.map(item => {
-        return {
-            day: moment(item.date).format('ddd'),
-            icon: item.day.condition.icon,
-            temperature: item.day.maxtemp_c,
-        };
-    });
+    const response = await Server.getData(userLocation.data.city);
 
     return {
         props: {
-            weathers: data,
-            week: weekData,
+            weathers: response.weathers,
+            week: response.week,
         },
     };
 }

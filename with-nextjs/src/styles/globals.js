@@ -30,4 +30,10 @@ export default createGlobalStyle`
             font-size: 55%;
         }
     }
+
+    @media(max-width: 400px){
+        html {
+            font-size: 45%;
+        }
+    }
 `;
